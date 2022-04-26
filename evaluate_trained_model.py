@@ -32,7 +32,7 @@ if __name__ == '__main__':
     dataset = get_dataset_model(args)
     model = adversarial_loss_final.PreActResNet18()
     check_point = torch.load('model_best.pth')
-    model.load_state_dict(check_point)
+    model.load_state_dict(check_point['state_dict'])
 
     _, val_loader = dataset.make_loaders(1, args.batch_size, only_val=True)
 
