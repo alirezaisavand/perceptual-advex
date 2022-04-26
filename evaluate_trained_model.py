@@ -3,6 +3,7 @@ from typing import Dict, List
 import torch
 import csv
 import argparse
+import torch.nn as nn
 
 from perceptual_advex.utilities import add_dataset_model_arguments, \
     get_dataset_model
@@ -30,7 +31,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     dataset = get_dataset_model(args)
+
     model = adversarial_loss_final.PreActResNet18()
+
+    model = nn.DataParallel(model).cuda()
+
     check_point = torch.load('model_best.pth')
     model.load_state_dict(check_point['state_dict'])
 
