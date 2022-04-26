@@ -83,105 +83,105 @@ def get_dataset_model(
     dataset_name = kwargs.get('dataset') or args.dataset
     dataset = DATASETS[dataset_name](dataset_path)
     return dataset
-    checkpoint_is_feature_model = False
-
-    if checkpoint_fname is None:
-        checkpoint_fname = getattr(args, 'checkpoint', None)
-    if arch is None:
-        arch = args.arch
-
-    if arch.startswith('rob-') or (
-        dataset_name.startswith('cifar') and
-        'resnet' in arch
-    ):
-        if arch.startswith('rob-'):
-            arch = arch[4:]
-        if checkpoint_fname == 'pretrained':
-            pytorch_pretrained = True
-            checkpoint_fname = None
-        else:
-            pytorch_pretrained = False
-        try:
-            model, _ = make_and_restore_model(
-                arch=arch,
-                dataset=dataset,
-                resume_path=checkpoint_fname,
-                pytorch_pretrained=pytorch_pretrained,
-                parallel=False,
-            )
-        except RuntimeError as error:
-            if 'state_dict' in str(error):
-                model, _ = make_and_restore_model(
-                    arch=arch,
-                    dataset=dataset,
-                    parallel=False,
-                )
-                try:
-                    state = torch.load(checkpoint_fname)
-                    model.model.load_state_dict(state['model'])
-                except RuntimeError as error:
-                    if 'state_dict' in str(error):
-                        checkpoint_is_feature_model = True
-                    else:
-                        raise error
-            else:
-                raise error  # type: ignore
-    elif arch == 'trades-wrn':
-        model = TradesWideResNet()
-        if checkpoint_fname is not None:
-            state = torch.load(checkpoint_fname)
-            model.load_state_dict(state)
-    elif hasattr(torchvision_models, arch):
-        if (
-            arch == 'alexnet' and
-            dataset_name.startswith('cifar') and
-            checkpoint_fname != 'pretrained'
-        ):
-            model = CifarAlexNet(num_classes=dataset.num_classes)
-        else:
-            if checkpoint_fname == 'pretrained':
-                model = getattr(torchvision_models, arch)(pretrained=True)
-            else:
-                model = getattr(torchvision_models, arch)(
-                    num_classes=dataset.num_classes)
-
-        if checkpoint_fname is not None and checkpoint_fname != 'pretrained':
-            try:
-                state = torch.load(checkpoint_fname)
-                model.load_state_dict(state['model'])
-            except RuntimeError as error:
-                if 'state_dict' in str(error):
-                    checkpoint_is_feature_model = True
-                else:
-                    raise error
-    else:
-        raise RuntimeError(f'Unsupported architecture {arch}.')
-
-    if 'alexnet' in arch:
-        model = AlexNetFeatureModel(model)
-    elif 'vgg16' in arch:
-        model = VGG16FeatureModel(model)
-    elif 'resnet' in arch:
-        if not isinstance(model, AttackerModel):
-            model = AttackerModel(model, dataset)
-        if dataset_name.startswith('cifar'):
-            model = CifarResNetFeatureModel(model)
-        elif (
-            dataset_name.startswith('imagenet')
-            or dataset_name == 'bird_or_bicycle'
-        ):
-            model = ImageNetResNetFeatureModel(model)
-        else:
-            raise RuntimeError('Unsupported dataset.')
-    elif arch == 'trades-wrn':
-        pass  # We can't use this as a FeatureModel yet.
-    else:
-        raise RuntimeError(f'Unsupported architecture {arch}.')
-
-    if checkpoint_is_feature_model:
-        model.load_state_dict(state['model'])
-
-    return dataset, model
+    # checkpoint_is_feature_model = False
+    #
+    # if checkpoint_fname is None:
+    #     checkpoint_fname = getattr(args, 'checkpoint', None)
+    # if arch is None:
+    #     arch = args.arch
+    #
+    # if arch.startswith('rob-') or (
+    #     dataset_name.startswith('cifar') and
+    #     'resnet' in arch
+    # ):
+    #     if arch.startswith('rob-'):
+    #         arch = arch[4:]
+    #     if checkpoint_fname == 'pretrained':
+    #         pytorch_pretrained = True
+    #         checkpoint_fname = None
+    #     else:
+    #         pytorch_pretrained = False
+    #     try:
+    #         model, _ = make_and_restore_model(
+    #             arch=arch,
+    #             dataset=dataset,
+    #             resume_path=checkpoint_fname,
+    #             pytorch_pretrained=pytorch_pretrained,
+    #             parallel=False,
+    #         )
+    #     except RuntimeError as error:
+    #         if 'state_dict' in str(error):
+    #             model, _ = make_and_restore_model(
+    #                 arch=arch,
+    #                 dataset=dataset,
+    #                 parallel=False,
+    #             )
+    #             try:
+    #                 state = torch.load(checkpoint_fname)
+    #                 model.model.load_state_dict(state['model'])
+    #             except RuntimeError as error:
+    #                 if 'state_dict' in str(error):
+    #                     checkpoint_is_feature_model = True
+    #                 else:
+    #                     raise error
+    #         else:
+    #             raise error  # type: ignore
+    # elif arch == 'trades-wrn':
+    #     model = TradesWideResNet()
+    #     if checkpoint_fname is not None:
+    #         state = torch.load(checkpoint_fname)
+    #         model.load_state_dict(state)
+    # elif hasattr(torchvision_models, arch):
+    #     if (
+    #         arch == 'alexnet' and
+    #         dataset_name.startswith('cifar') and
+    #         checkpoint_fname != 'pretrained'
+    #     ):
+    #         model = CifarAlexNet(num_classes=dataset.num_classes)
+    #     else:
+    #         if checkpoint_fname == 'pretrained':
+    #             model = getattr(torchvision_models, arch)(pretrained=True)
+    #         else:
+    #             model = getattr(torchvision_models, arch)(
+    #                 num_classes=dataset.num_classes)
+    #
+    #     if checkpoint_fname is not None and checkpoint_fname != 'pretrained':
+    #         try:
+    #             state = torch.load(checkpoint_fname)
+    #             model.load_state_dict(state['model'])
+    #         except RuntimeError as error:
+    #             if 'state_dict' in str(error):
+    #                 checkpoint_is_feature_model = True
+    #             else:
+    #                 raise error
+    # else:
+    #     raise RuntimeError(f'Unsupported architecture {arch}.')
+    #
+    # if 'alexnet' in arch:
+    #     model = AlexNetFeatureModel(model)
+    # elif 'vgg16' in arch:
+    #     model = VGG16FeatureModel(model)
+    # elif 'resnet' in arch:
+    #     if not isinstance(model, AttackerModel):
+    #         model = AttackerModel(model, dataset)
+    #     if dataset_name.startswith('cifar'):
+    #         model = CifarResNetFeatureModel(model)
+    #     elif (
+    #         dataset_name.startswith('imagenet')
+    #         or dataset_name == 'bird_or_bicycle'
+    #     ):
+    #         model = ImageNetResNetFeatureModel(model)
+    #     else:
+    #         raise RuntimeError('Unsupported dataset.')
+    # elif arch == 'trades-wrn':
+    #     pass  # We can't use this as a FeatureModel yet.
+    # else:
+    #     raise RuntimeError(f'Unsupported architecture {arch}.')
+    #
+    # if checkpoint_is_feature_model:
+    #     model.load_state_dict(state['model'])
+    #
+    # return dataset, model
 
 
 def calculate_accuracy(logits, labels):
