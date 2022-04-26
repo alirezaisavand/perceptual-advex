@@ -82,7 +82,7 @@ def get_dataset_model(
 
     dataset_name = kwargs.get('dataset') or args.dataset
     dataset = DATASETS[dataset_name](dataset_path)
-
+    return dataset
     checkpoint_is_feature_model = False
 
     if checkpoint_fname is None:

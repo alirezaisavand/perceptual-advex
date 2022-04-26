@@ -28,7 +28,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    dataset, model = get_dataset_model(args)
+    dataset = get_dataset_model(args)
+    model = torch.load('model_best.pth')
+
     _, val_loader = dataset.make_loaders(1, args.batch_size, only_val=True)
 
     model.eval()
