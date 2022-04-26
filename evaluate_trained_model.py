@@ -6,6 +6,7 @@ import argparse
 
 from perceptual_advex.utilities import add_dataset_model_arguments, \
     get_dataset_model
+import adversarial_loss_final
 from perceptual_advex.attacks import *
 
 
@@ -29,7 +30,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     dataset = get_dataset_model(args)
-    model = torch.load('model_best.pth')
+    model = adversarial_loss_final.PreActResNet18()
+    check_point = torch.load('model_best.pth')
+    model.load_state_dict(check_point)
 
     _, val_loader = dataset.make_loaders(1, args.batch_size, only_val=True)
 
