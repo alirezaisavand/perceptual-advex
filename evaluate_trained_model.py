@@ -5,6 +5,17 @@ import csv
 import argparse
 import torch.nn as nn
 
+
+
+def normalize(X):
+    cifar10_mean = (0.4914, 0.4822, 0.4465)  # equals np.mean(train_set.train_data, axis=(0,1,2))/255
+    cifar10_std = (0.2471, 0.2435, 0.2616)  # equals np.std(train_set.train_data, axis=(0,1,2))/255
+
+    mu = torch.tensor(cifar10_mean).view(3, 1, 1).cuda()
+    std = torch.tensor(cifar10_std).view(3, 1, 1).cuda()
+
+    return (X - mu)/std
+
 from perceptual_advex.utilities import add_dataset_model_arguments, \
     get_dataset_model
 import adversarial_loss_final
@@ -73,7 +84,7 @@ if __name__ == '__main__':
         for attack_name, attack in zip(attack_names, attacks):
             adv_inputs = attack(inputs, labels)
             with torch.no_grad():
-                adv_logits = model(adv_inputs)
+                adv_logits = model(normalize(adv_inputs))
             batch_correct = (adv_logits.argmax(1) == labels).detach()
 
             batch_accuracy = batch_correct.float().mean().item()
