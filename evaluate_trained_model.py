@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     batches_correct: Dict[str, List[torch.Tensor]] = \
         {attack_name: [] for attack_name in attack_names}
-
+    print('number of batches:', len(val_loader), sep=' ')
     for batch_index, (inputs, labels) in enumerate(val_loader):
         print(f'BATCH {batch_index:05d}')
 
