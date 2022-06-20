@@ -98,9 +98,11 @@ if __name__ == '__main__':
             labels = labels.cuda()
 
         for attack_name, attack in zip(attack_names, attacks):
-            adv_inputs = attack(inputs, labels)
+            normalized_inputs = normalize(inputs)
+            adv_inputs = attack(normalized_inputs, labels)
             with torch.no_grad():
-                adv_logits = model(normalize(adv_inputs))
+                #todo check when we should normalize input that doesn't affect the attacks
+                adv_logits = model(adv_inputs)
             batch_correct = (adv_logits.argmax(1) == labels).detach()
 
             batch_accuracy = batch_correct.float().mean().item()
