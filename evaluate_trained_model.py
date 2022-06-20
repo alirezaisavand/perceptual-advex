@@ -57,22 +57,22 @@ if __name__ == '__main__':
         model.cuda()
 
     #changed here
-    # attack_names: List[str] = args.attacks
-    # attacks = [eval(attack_name) for attack_name in attack_names]
-    attacks = []
-    attack_names = []
-
-    attack = LagrangePerceptualAttack(
-    model,
-    num_iterations=10,
+    attack_names: List[str] = args.attacks
+    attacks = [eval(attack_name) for attack_name in attack_names]
+    # attacks = []
+    # attack_names = []
+    #
+    # attack = LagrangePerceptualAttack(
+    # model,
+    # num_iterations=10,
     # The LPIPS distance bound on the adversarial examples.
-    bound=0.5,
+    # bound=0.5,
     # The model to use for calculate LPIPS; here we use AlexNet.
     # You can also use 'self' to perform a self-bounded attack.
-    lpips_model='alexnet_cifar',
-    )
-    attacks.append(attack)
-    attack_names.append('Lagrange Perceptual')
+    # lpips_model='alexnet_cifar',
+    # )
+    # attacks.append(attack)
+    # attack_names.append('Lagrange Perceptual')
     ###
 
     # Parallelize
