@@ -112,7 +112,7 @@ if __name__ == '__main__':
             adv_inputs = attack(inputs, labels)
             with torch.no_grad():
                 # todo check when we should normalize input that doesn't affect the attacks
-                adv_logits = wrapper(adv_inputs)
+                adv_logits = model(adv_inputs)
             batch_correct = (adv_logits.argmax(1) == labels).detach()
 
             batch_accuracy = batch_correct.float().mean().item()
