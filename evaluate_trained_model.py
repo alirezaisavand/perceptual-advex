@@ -1,10 +1,8 @@
-
 from typing import Dict, List
 import torch
 import csv
 import argparse
 import torch.nn as nn
-
 
 
 def normalize(X):
@@ -14,13 +12,21 @@ def normalize(X):
     mu = torch.tensor(cifar10_mean).view(3, 1, 1).cuda()
     std = torch.tensor(cifar10_std).view(3, 1, 1).cuda()
 
-    return (X - mu)/std
+    return (X - mu) / std
+
+
+class Wrapper:
+    def __init__(self, model):
+        self.model = model
+
+    def __call__(self, x):
+        return self.model(normalize(x))
+
 
 from perceptual_advex.utilities import add_dataset_model_arguments, \
     get_dataset_model
 import adversarial_loss_final
 from perceptual_advex.attacks import *
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -43,21 +49,23 @@ if __name__ == '__main__':
 
     dataset = get_dataset_model(args)
 
-    model = adversarial_loss_final.PreActResNet18()
+    pure_model = adversarial_loss_final.PreActResNet18()
+    model = Wrapper(pure_model)
 
-    model = nn.DataParallel(model).cuda()
+    pure_model = nn.DataParallel(pure_model).cuda()
 
     check_point = torch.load('model_best.pth')
-    model.load_state_dict(check_point['state_dict'])
+    pure_model.load_state_dict(check_point['state_dict'])
 
     _, val_loader = dataset.make_loaders(1, args.batch_size, only_val=True)
 
-    model.eval()
-    if torch.cuda.is_available():
-        model.cuda()
+    pure_model.eval()
 
-    #changed here
-    #could operate wrong on those which take dataset as input because we normalize input
+    if torch.cuda.is_available():
+        pure_model.cuda()
+
+    # changed here
+    # could operate wrong on those which take dataset as input because we normalize input
     attack_names: List[str] = args.attacks
     attacks = [eval(attack_name) for attack_name in attack_names]
     # attacks = []
@@ -79,18 +87,19 @@ if __name__ == '__main__':
     # Parallelize
     if torch.cuda.is_available():
         device_ids = list(range(args.parallel))
-        model = nn.DataParallel(model, device_ids)
+        pure_model = nn.DataParallel(pure_model, device_ids)
         attacks = [nn.DataParallel(attack, device_ids) for attack in attacks]
 
     batches_correct: Dict[str, List[torch.Tensor]] = \
         {attack_name: [] for attack_name in attack_names}
     print('number of batches:', len(val_loader), sep=' ')
+
     for batch_index, (inputs, labels) in enumerate(val_loader):
         print(f'BATCH {batch_index:05d}')
 
         if (
-            args.num_batches is not None and
-            batch_index >= args.num_batches
+                args.num_batches is not None and
+                batch_index >= args.num_batches
         ):
             break
 
@@ -102,8 +111,8 @@ if __name__ == '__main__':
             # normalized_inputs = normalize(inputs)
             adv_inputs = attack(inputs, labels)
             with torch.no_grad():
-                #todo check when we should normalize input that doesn't affect the attacks
-                adv_logits = model(adv_inputs)
+                # todo check when we should normalize input that doesn't affect the attacks
+                adv_logits = wrapper(adv_inputs)
             batch_correct = (adv_logits.argmax(1) == labels).detach()
 
             batch_accuracy = batch_correct.float().mean().item()

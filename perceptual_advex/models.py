@@ -153,7 +153,7 @@ class CifarResNetFeatureModel(FeatureModel):
     def __init__(self, attacker_model):
         super().__init__()
         self.normalizer = attacker_model.normalizer
-        self.model = attacker_model.model
+        self.model = attacker_model.pure_model
 
     def features(self, x):
         x = self.normalizer(x)
