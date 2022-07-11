@@ -57,6 +57,7 @@ if __name__ == '__main__':
         model.cuda()
 
     #changed here
+    #could operate wrong on those which take dataset as input because we normalize input
     attack_names: List[str] = args.attacks
     attacks = [eval(attack_name) for attack_name in attack_names]
     # attacks = []
