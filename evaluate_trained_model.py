@@ -25,6 +25,9 @@ class Wrapper:
     def eval(self):
         return self.model.eval()
 
+    def zero_grad(self):
+        return self.model.zero_grad()
+
 
 from perceptual_advex.utilities import add_dataset_model_arguments, \
     get_dataset_model
