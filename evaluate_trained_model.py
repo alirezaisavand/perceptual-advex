@@ -99,8 +99,8 @@ if __name__ == '__main__':
             labels = labels.cuda()
 
         for attack_name, attack in zip(attack_names, attacks):
-            normalized_inputs = normalize(inputs)
-            adv_inputs = attack(normalized_inputs, labels)
+            # normalized_inputs = normalize(inputs)
+            adv_inputs = attack(inputs, labels)
             with torch.no_grad():
                 #todo check when we should normalize input that doesn't affect the attacks
                 adv_logits = model(adv_inputs)
