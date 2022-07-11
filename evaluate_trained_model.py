@@ -22,6 +22,9 @@ class Wrapper:
     def __call__(self, x):
         return self.model(normalize(x))
 
+    def eval(self):
+        return self.model.eval()
+
 
 from perceptual_advex.utilities import add_dataset_model_arguments, \
     get_dataset_model
