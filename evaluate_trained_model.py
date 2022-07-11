@@ -28,6 +28,9 @@ class Wrapper:
     def zero_grad(self):
         return self.model.zero_grad()
 
+    def forward(self, classifier_in):
+        return self.model.forward(classifier_in)
+
 
 from perceptual_advex.utilities import add_dataset_model_arguments, \
     get_dataset_model
